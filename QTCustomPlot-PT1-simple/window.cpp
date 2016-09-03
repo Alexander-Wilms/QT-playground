@@ -1,7 +1,7 @@
-#include "mainwindow.h"
+#include "window.h"
 
-MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent)
+Window::Window(QWidget *parent) :
+ QWidget(parent)
 {
     setWindowTitle("My first QTCustomPlot");
     setFixedSize(500,500);
@@ -37,7 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     customPlot->replot();
 }
 
-MainWindow::~MainWindow()
+Window::~Window()
 {
-    //delete ui;
+
 }

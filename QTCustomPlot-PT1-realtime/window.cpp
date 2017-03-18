@@ -1,5 +1,7 @@
 #include "window.h"
 
+double oldvalue = 0;
+
 Window::Window(QWidget *parent) :
  QWidget(parent)
 {
@@ -25,7 +27,7 @@ Window::Window(QWidget *parent) :
     connect(&dataTimer, SIGNAL(timeout()), this, SLOT(realtimeDataSlot()));
     dataTimer.start(10);
 }
-double oldvalue = 0;
+
 void Window::realtimeDataSlot(void)
 {
   // calculate two new data points:
@@ -54,7 +56,6 @@ void Window::realtimeDataSlot(void)
   }
   customPlot->replot();
 }
-
 
 Window::~Window()
 {

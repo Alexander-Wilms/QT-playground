@@ -20,54 +20,59 @@ Window::Window(QWidget *parent) :
 
     QGridLayout* grid = new QGridLayout(this);
 
-    customPlot0 = new QCustomPlot(this);
-    customPlot1 = new QCustomPlot(this);
-    customPlot2 = new QCustomPlot(this);
-    customPlot3 = new QCustomPlot(this);
+    cartesian_plot = new QCustomPlot(this);
+    cartesian_curve = new QCPCurve(cartesian_plot->xAxis, cartesian_plot->yAxis);
 
-    grid->addWidget(customPlot0,0,0);
-    grid->addWidget(customPlot1,0,1);
-    grid->addWidget(customPlot2,1,0);
-    grid->addWidget(customPlot3,1,1);
+    config_space_plot = new QCustomPlot(this);
+    curve_in_config_space = new QCPCurve(config_space_plot->xAxis, config_space_plot->yAxis);
 
-    customPlot0->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
-    customPlot0->setMinimumHeight(250);
-    customPlot0->setMinimumWidth(250);
+    q1_graph = new QCustomPlot(this);
 
-    customPlot1->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
-    customPlot1->setMinimumHeight(250);
-    customPlot1->setMinimumWidth(250);
+    q2_graph = new QCustomPlot(this);
 
-    customPlot2->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
-    customPlot2->setMinimumHeight(250);
-    customPlot2->setMinimumWidth(250);
+    grid->addWidget(cartesian_plot,0,0);
+    grid->addWidget(config_space_plot,0,1);
+    grid->addWidget(q1_graph,1,0);
+    grid->addWidget(q2_graph,1,1);
 
-    customPlot3->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
-    customPlot3->setMinimumHeight(250);
-    customPlot3->setMinimumWidth(250);
+    cartesian_plot->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
+    cartesian_plot->setMinimumHeight(250);
+    cartesian_plot->setMinimumWidth(250);
+
+    config_space_plot->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
+    config_space_plot->setMinimumHeight(250);
+    config_space_plot->setMinimumWidth(250);
+
+    q1_graph->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
+    q1_graph->setMinimumHeight(250);
+    q1_graph->setMinimumWidth(250);
+
+    q2_graph->setSizePolicy(QSizePolicy ::Expanding , QSizePolicy ::Expanding);
+    q2_graph->setMinimumHeight(250);
+    q2_graph->setMinimumWidth(250);
 
     // create graph and assign data to it:
-    customPlot0->addGraph();
-    customPlot1->addGraph();
-    customPlot2->addGraph();
-    customPlot3->addGraph();
+    //cartesian_curve->addGraph();
+    //curve_in_config_space->addGraph();
+    q1_graph->addGraph();
+    q2_graph->addGraph();
 
     // give the axes some labels:
-    customPlot0->xAxis->setLabel("x");
-    customPlot0->yAxis->setLabel("y");
+    cartesian_plot->xAxis->setLabel("x");
+    cartesian_plot->yAxis->setLabel("y");
 
-    customPlot1->xAxis->setLabel("q1");
-    customPlot1->yAxis->setLabel("q2");
+    config_space_plot->xAxis->setLabel("q1");
+    config_space_plot->yAxis->setLabel("q2");
 
-    customPlot2->xAxis->setLabel("sample");
-    customPlot2->yAxis->setLabel("q1");
+    q1_graph->xAxis->setLabel("sample");
+    q1_graph->yAxis->setLabel("q1");
 
-    customPlot3->xAxis->setLabel("sample");
-    customPlot3->yAxis->setLabel("q2");
+    q2_graph->xAxis->setLabel("sample");
+    q2_graph->yAxis->setLabel("q2");
 
     // set axes ranges, so we see all data:
-    customPlot0->xAxis->setRange(0, 1);
-    customPlot0->yAxis->setRange(0, 2);
+    cartesian_plot->xAxis->setRange(0, 1);
+    cartesian_plot->yAxis->setRange(0, 2);
 
     // interpolate line
 
@@ -100,29 +105,31 @@ void Window::update(void)
 {
     static int i = 0;
 
-    float x = x_values.at(i);
-    float y = y_values.at(i);
+    QVector<double> t,x,y,q1,q2;
+    t.append(i);
+    x.append(x_values.at(i));
+    y.append(y_values.at(i));
 
-    customPlot0->graph(0)->addData(x,y);
-    customPlot0->graph(0)->rescaleKeyAxis();
-    customPlot0->graph(0)->rescaleValueAxis();
-    customPlot0->replot();
+    cartesian_curve->addData(t,x,y);
+    cartesian_curve->rescaleAxes();
+    cartesian_plot->replot();
 
-    std::vector<double> joint_values = inverse_kinematics(x,y,175,125);
-    customPlot1->graph(0)->addData(joint_values.at(0)*RAD2DEG,joint_values.at(1)*RAD2DEG);
-    customPlot1->graph(0)->rescaleKeyAxis();
-    customPlot1->graph(0)->rescaleValueAxis();
-    customPlot1->replot();
+    std::vector<double> joint_values = inverse_kinematics(x.at(0),y.at(0),175,125);
+    q1.append(joint_values.at(0)*RAD2DEG);
+    q2.append(joint_values.at(1)*RAD2DEG);
+    curve_in_config_space->addData(t,q1,q2);
+    curve_in_config_space->rescaleAxes();
+    config_space_plot->replot();
 
-    customPlot2->graph(0)->addData(i,joint_values.at(0)*RAD2DEG);
-    customPlot2->graph(0)->rescaleKeyAxis();
-    customPlot2->graph(0)->rescaleValueAxis();
-    customPlot2->replot();
+    q1_graph->graph(0)->addData(i,joint_values.at(0)*RAD2DEG);
+    q1_graph->graph(0)->rescaleKeyAxis();
+    q1_graph->graph(0)->rescaleValueAxis();
+    q1_graph->replot();
 
-    customPlot3->graph(0)->addData(i,joint_values.at(1)*RAD2DEG);
-    customPlot3->graph(0)->rescaleKeyAxis();
-    customPlot3->graph(0)->rescaleValueAxis();
-    customPlot3->replot();
+    q2_graph->graph(0)->addData(i,joint_values.at(1)*RAD2DEG);
+    q2_graph->graph(0)->rescaleKeyAxis();
+    q2_graph->graph(0)->rescaleValueAxis();
+    q2_graph->replot();
 
     i++;
 

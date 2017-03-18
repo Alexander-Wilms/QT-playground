@@ -17,10 +17,12 @@ private slots:
     void update();
 
 private:
-    QCustomPlot *customPlot0;
-    QCustomPlot *customPlot1;
-    QCustomPlot *customPlot2;
-    QCustomPlot *customPlot3;
+    QCustomPlot *cartesian_plot;
+    QCPCurve *cartesian_curve;
+    QCustomPlot *config_space_plot;
+    QCPCurve *curve_in_config_space;
+    QCustomPlot *q1_graph;
+    QCustomPlot *q2_graph;
     QTimer dataTimer;
     QVector<double> x, y; // initialize with entries 0..100
     double e;

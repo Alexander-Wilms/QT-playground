@@ -15,7 +15,7 @@ std::vector<double> y_values;
 Window::Window(QWidget *parent) :
  QWidget(parent)
 {
-    setWindowTitle("My first QTCustomPlot - realtime");
+    setWindowTitle("Linear robot demo");
     setMinimumSize(500,500);
 
     QGridLayout* grid = new QGridLayout(this);
@@ -23,11 +23,23 @@ Window::Window(QWidget *parent) :
     cartesian_plot = new QCustomPlot(this);
     cartesian_curve = new QCPCurve(cartesian_plot->xAxis, cartesian_plot->yAxis);
 
+    link_1 = new QCPItemLine(cartesian_plot);
+    cartesian_plot->addItem(link_1);
+    link_1->setPen(QPen(Qt::red));
+//    link_1->start->setType(QCPItemPosition::PositionType::ptPlotCoords);
+//    link_1->start->setAxes(cartesian_plot->xAxis,cartesian_plot->yAxis);
+//    link_1->end->setAxes(cartesian_plot->xAxis,cartesian_plot->yAxis);
+    link_1->start->setCoords(0,0);
+    link_1->end->setCoords(120,260);
+    //cartesian_plot->rescaleAxes();
+    cartesian_plot->yAxis->setRange(0,260);
+    cartesian_plot->xAxis->setRange(-120,120);
+    //cartesian_plot->replot();
+
     config_space_plot = new QCustomPlot(this);
     curve_in_config_space = new QCPCurve(config_space_plot->xAxis, config_space_plot->yAxis);
 
     q1_graph = new QCustomPlot(this);
-
     q2_graph = new QCustomPlot(this);
 
     grid->addWidget(cartesian_plot,0,0);
@@ -70,12 +82,20 @@ Window::Window(QWidget *parent) :
     q2_graph->xAxis->setLabel("sample");
     q2_graph->yAxis->setLabel("q2");
 
+    config_space_plot->xAxis->setRange(0,90);
+    config_space_plot->yAxis->setRange(0,90);
+
+    q1_graph->yAxis->setRange(0,90);
+    q1_graph->xAxis->setRange(0,200);
+
+    q2_graph->yAxis->setRange(0,90);
+    q2_graph->xAxis->setRange(0,200);
+
     // set axes ranges, so we see all data:
     cartesian_plot->xAxis->setRange(0, 1);
     cartesian_plot->yAxis->setRange(0, 2);
 
     // interpolate line
-
     double x_start = 120;
     double x_end = -120;
     double x_delta = x_end - x_start;
@@ -111,24 +131,29 @@ void Window::update(void)
     y.append(y_values.at(i));
 
     cartesian_curve->addData(t,x,y);
+    link_1->end->setCoords(x.at(0),y.at(0));
     cartesian_curve->rescaleAxes();
+    //if(cartesian_plot->yAxis->range().lower > 0)
+    //cartesian_plot->yAxis->setRangeLower(0);
+    cartesian_plot->yAxis->setRange(0,260);
+    cartesian_plot->xAxis->setRange(-120,120);
+    //cartesian_plot->yAxis->setRange(0,250);
+    //cartesian_plot->xAxis->setRange(-120,120);
     cartesian_plot->replot();
 
     std::vector<double> joint_values = inverse_kinematics(x.at(0),y.at(0),175,125);
     q1.append(joint_values.at(0)*RAD2DEG);
     q2.append(joint_values.at(1)*RAD2DEG);
     curve_in_config_space->addData(t,q1,q2);
-    curve_in_config_space->rescaleAxes();
+    //curve_in_config_space->rescaleAxes();
     config_space_plot->replot();
 
     q1_graph->graph(0)->addData(i,joint_values.at(0)*RAD2DEG);
-    q1_graph->graph(0)->rescaleKeyAxis();
-    q1_graph->graph(0)->rescaleValueAxis();
+    //q1_graph->graph(0)->rescaleAxes();
     q1_graph->replot();
 
     q2_graph->graph(0)->addData(i,joint_values.at(1)*RAD2DEG);
-    q2_graph->graph(0)->rescaleKeyAxis();
-    q2_graph->graph(0)->rescaleValueAxis();
+    //q2_graph->graph(0)->rescaleAxes();
     q2_graph->replot();
 
     i++;

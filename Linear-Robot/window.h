@@ -35,6 +35,7 @@ private:
     std::vector<double> y_values;
     std::vector<double> inverse_kinematics(double x, double y, double l1, double l2);
     QCPItemLine *link_1;
+    QCPItemLine *link_2;
 };
 
 #endif // WINDOW_H

@@ -31,9 +31,6 @@ Window::Window(QWidget *parent) :
     cartesian_plot->addItem(link_2);
     link_2->setPen(QPen(Qt::green));
 
-    cartesian_plot->yAxis->setRange(0,260);
-    cartesian_plot->xAxis->setRange(-120,120);
-
     config_space_plot = new QCustomPlot(this);
     curve_in_config_space = new QCPCurve(config_space_plot->xAxis, config_space_plot->yAxis);
 
@@ -62,8 +59,6 @@ Window::Window(QWidget *parent) :
     q2_graph->setMinimumWidth(250);
 
     // create graph and assign data to it:
-    //cartesian_curve->addGraph();
-    //curve_in_config_space->addGraph();
     q1_graph->addGraph();
     q2_graph->addGraph();
 
@@ -80,6 +75,9 @@ Window::Window(QWidget *parent) :
     q2_graph->xAxis->setLabel("sample");
     q2_graph->yAxis->setLabel("q2");
 
+    cartesian_plot->yAxis->setRange(0,260);
+    cartesian_plot->xAxis->setRange(-120,120);
+
     config_space_plot->xAxis->setRange(0,90);
     config_space_plot->yAxis->setRange(0,90);
 
@@ -88,10 +86,6 @@ Window::Window(QWidget *parent) :
 
     q2_graph->yAxis->setRange(0,90);
     q2_graph->xAxis->setRange(0,200);
-
-    // set axes ranges, so we see all data:
-    cartesian_plot->xAxis->setRange(0, 1);
-    cartesian_plot->yAxis->setRange(0, 2);
 
     // interpolate line
     double x_start = 120;
@@ -131,33 +125,19 @@ void Window::update(void)
 
     cartesian_curve->addData(t,x,y);
     link_1->end->setCoords(cos(joint_values.at(0))*175,sin(joint_values.at(0))*175);
-
     link_2->start->setCoords(cos(joint_values.at(0))*175,sin(joint_values.at(0))*175);
-
     link_2->end->setCoords(cos(joint_values.at(0))*175+cos(joint_values.at(0)+joint_values.at(1))*125,sin(joint_values.at(0))*175+sin(joint_values.at(0)+joint_values.at(1))*125);
-
-    cartesian_curve->rescaleAxes();
-    //if(cartesian_plot->yAxis->range().lower > 0)
-    //cartesian_plot->yAxis->setRangeLower(0);
-    cartesian_plot->yAxis->setRange(0,260);
-    cartesian_plot->xAxis->setRange(-120,120);
-    //cartesian_plot->yAxis->setRange(0,250);
-    //cartesian_plot->xAxis->setRange(-120,120);
     cartesian_plot->replot();
-
 
     q1.append(joint_values.at(0)*RAD2DEG);
     q2.append(joint_values.at(1)*RAD2DEG);
     curve_in_config_space->addData(t,q1,q2);
-    //curve_in_config_space->rescaleAxes();
     config_space_plot->replot();
 
     q1_graph->graph(0)->addData(i,joint_values.at(0)*RAD2DEG);
-    //q1_graph->graph(0)->rescaleAxes();
     q1_graph->replot();
 
     q2_graph->graph(0)->addData(i,joint_values.at(1)*RAD2DEG);
-    //q2_graph->graph(0)->rescaleAxes();
     q2_graph->replot();
 
     i++;

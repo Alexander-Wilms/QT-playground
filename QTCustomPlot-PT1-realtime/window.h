@@ -13,7 +13,7 @@ public:
     ~Window();
 
 private slots:
-    void realtimeDataSlot();
+    void update();
 
 private:
     QCustomPlot *customPlot;
@@ -23,7 +23,10 @@ private:
     double T1;
     double T;
     double kp;
-    double oldvalue;
+    double out_k_minus_1 = 0;
+    double out_k_minus_2 = 0;
+    double PT1(double out_k_minus_1);
+    double PT2(double out_k_minus_1, double out_k_minus_2);
 };
 
 #endif // WINDOW_H

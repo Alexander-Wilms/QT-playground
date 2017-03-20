@@ -15,46 +15,73 @@ Window::Window(QWidget *parent) :
 
     // create graph and assign data to it:
     customPlot->addGraph();
-    //customPlot->graph(0)->setData(x, y);
+
     // give the axes some labels:
     customPlot->xAxis->setLabel("x");
     customPlot->yAxis->setLabel("y");
+
     // set axes ranges, so we see all data:
     customPlot->xAxis->setRange(0, 1);
-    customPlot->yAxis->setRange(0, 2);
-    customPlot->replot();
+    customPlot->yAxis->setRange(0, 2.1);
 
-    connect(&dataTimer, SIGNAL(timeout()), this, SLOT(realtimeDataSlot()));
+    // connect timer's timeout signal with update() slot
+    connect(&dataTimer, SIGNAL(timeout()), this, SLOT(update()));
+
+    // start timer with 10 ms interval
     dataTimer.start(10);
 }
 
-void Window::realtimeDataSlot(void)
+void Window::update(void)
 {
   // calculate two new data points:
 
-  double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/10;
+  double t = QDateTime::currentDateTime().toMSecsSinceEpoch()/10;
   //printf("%f", key);
-  static double starttime = key;
+
+  static double starttime = t;
   //printf(" ,%f", starttime);
-  key -= starttime;
-  printf("\n k: %f, ", key);
-  double T = 0.01;
-  double T1 = 1;
-  double kp = 2;
-  static double lastPointKey = 0;
-  double value0 = 0;
-  if (key-lastPointKey > 0.01) // at most add point every 10 ms
+
+  t -= starttime;
+  printf("\n k: %f, ", t);
+
+  static double last_t = 0;
+  double out_k = 0;
+
+  if (t-last_t > 0.01) // at most add point every 10 ms
   {
-    printf("y(k-1): %f, ", oldvalue);
-    value0 = (T1/(T1+T))*oldvalue + kp*(T/(T1+T))*1;
-    printf("y(k): %f", value0);
-     oldvalue = value0;
+    printf("y(k-1): %f, ", out_k_minus_1);
+    out_k = PT1(out_k_minus_1);
+    //out_k = PT2(out_k_minus_1, out_k_minus_2);
+    printf("y(k): %f", out_k);
+    out_k_minus_2 = out_k_minus_1;
+    out_k_minus_1 = out_k;
+
     // add data to lines:
-    customPlot->graph(0)->addData(key, value0);
+    customPlot->graph(0)->addData(t, out_k);
     customPlot->graph(0)->rescaleKeyAxis();
-    lastPointKey = key;
+    customPlot->graph(0)->rescaleValueAxis();
+    last_t = t;
   }
   customPlot->replot();
+}
+
+double Window::PT1(double out_k_minus_1) {
+    double T_sample = 0.01;
+    double T = 1;
+    double K = 2;
+    double stepvalue = 1;
+
+    return (T*-out_k_minus_1/T_sample-K*stepvalue)/(-T/T_sample-1);
+}
+
+double Window::PT2(double out_k_minus_1, double out_k_minus_2) {
+    double T_sample = 0.01;
+    double T = 1;
+    double D = 0.2;
+    double K = 2;
+    double stepvalue = 1;
+
+    return (1/pow(T,2)*(-2*out_k_minus_1+out_k_minus_2)/pow(T_sample,2)+2*D*T*-out_k_minus_1/T_sample-K*stepvalue)/(-pow(T,2)/pow(T_sample,2)-2*D*T/T_sample-1);
 }
 
 Window::~Window()

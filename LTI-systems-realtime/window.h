@@ -23,8 +23,9 @@ private:
     double T1;
     double T;
     double kp;
-    double out_k_minus_1 = 0;
-    double out_k_minus_2 = 0;
+    double out_k_minus_1_PT1 = 0;
+    double out_k_minus_1_PT2 = 0;
+    double out_k_minus_2_PT2 = 0;
     double PT1(double out_k_minus_1);
     double PT2(double out_k_minus_1, double out_k_minus_2);
 };

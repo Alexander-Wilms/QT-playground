@@ -5,7 +5,7 @@ double oldvalue = 0;
 Window::Window(QWidget *parent) :
  QWidget(parent)
 {
-    setWindowTitle("My first QTCustomPlot - realtime");
+    setWindowTitle("LTI systems - realtime");
     setFixedSize(500,500);
 
     customPlot = new QCustomPlot(this);
@@ -15,6 +15,9 @@ Window::Window(QWidget *parent) :
 
     // create graph and assign data to it:
     customPlot->addGraph();
+    customPlot->addGraph();
+
+    customPlot->graph(1)->setPen(QPen(Qt::red));
 
     // give the axes some labels:
     customPlot->xAxis->setLabel("x");
@@ -22,7 +25,7 @@ Window::Window(QWidget *parent) :
 
     // set axes ranges, so we see all data:
     customPlot->xAxis->setRange(0, 1);
-    customPlot->yAxis->setRange(0, 2.1);
+    customPlot->yAxis->setRange(0, 3.5);
 
     // connect timer's timeout signal with update() slot
     connect(&dataTimer, SIGNAL(timeout()), this, SLOT(update()));
@@ -36,30 +39,35 @@ void Window::update(void)
   // calculate two new data points:
 
   double t = QDateTime::currentDateTime().toMSecsSinceEpoch()/10;
-  //printf("%f", key);
 
   static double starttime = t;
-  //printf(" ,%f", starttime);
 
   t -= starttime;
-  printf("\n k: %f, ", t);
 
   static double last_t = 0;
-  double out_k = 0;
+  double out_k_PT1 = 0;
+  double out_k_PT2 = 0;
 
   if (t-last_t > 0.01) // at most add point every 10 ms
   {
-    printf("y(k-1): %f, ", out_k_minus_1);
-    out_k = PT1(out_k_minus_1);
-    //out_k = PT2(out_k_minus_1, out_k_minus_2);
-    printf("y(k): %f", out_k);
-    out_k_minus_2 = out_k_minus_1;
-    out_k_minus_1 = out_k;
+
+    out_k_PT1 = PT1(out_k_minus_1_PT1);
+    out_k_PT2 = PT2(out_k_minus_1_PT2, out_k_minus_2_PT2);
+
+    out_k_minus_1_PT1 = out_k_PT1;
+
+    out_k_minus_2_PT2 = out_k_minus_1_PT2;
+    out_k_minus_1_PT2 = out_k_PT2;
 
     // add data to lines:
-    customPlot->graph(0)->addData(t, out_k);
+    customPlot->graph(0)->addData(t, out_k_PT1);
     customPlot->graph(0)->rescaleKeyAxis();
-    customPlot->graph(0)->rescaleValueAxis();
+    //customPlot->graph(0)->rescaleValueAxis();
+
+    customPlot->graph(1)->addData(t, out_k_PT2);
+    customPlot->graph(1)->rescaleKeyAxis();
+    //customPlot->graph(1)->rescaleValueAxis();
+
     last_t = t;
   }
   customPlot->replot();

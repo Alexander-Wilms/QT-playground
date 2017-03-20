@@ -5,7 +5,7 @@ double oldvalue = 0;
 Window::Window(QWidget *parent) :
  QWidget(parent)
 {
-    setWindowTitle("LTI systems - realtime");
+    setWindowTitle("LTI systems realtime");
     setFixedSize(500,500);
 
     customPlot = new QCustomPlot(this);

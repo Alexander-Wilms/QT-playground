@@ -9,6 +9,7 @@
 #include <QVector>
 #include <array>
 #include <QSignalMapper>
+#include <QFile>
 
 class Widget : public QWidget
 {
@@ -26,9 +27,11 @@ private:
     QVector<QLabel*> labels;
     QSignalMapper * signalMapper;
     int numberofitems;
+    QFile *file;
 
 private slots:
-    void add_item();
+    void add_item(QString text);
+    void add_item_frontend();
     void remove_item(int i);
 };
 

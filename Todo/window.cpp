@@ -45,19 +45,21 @@ Widget::Widget(QWidget *parent)
 }
 
 void Widget::add_item() {
-    numberofitems++;
-    layouts.push_back(new QHBoxLayout);
-    checkboxes.push_back(new QCheckBox());
-    labels.push_back(new QLabel);
-    layouts.back()->setAlignment(Qt::AlignLeft);
-    layouts.back()->addWidget(checkboxes.back());
-    layouts.back()->addWidget(labels.back());
-    labels.back()->setText(edit->text());
-    edit->clear();
-    vlayout->addLayout(layouts.back());
+    if(edit->text() != "") {
+        numberofitems++;
+        layouts.push_back(new QHBoxLayout);
+        checkboxes.push_back(new QCheckBox());
+        labels.push_back(new QLabel);
+        layouts.back()->setAlignment(Qt::AlignLeft);
+        layouts.back()->addWidget(checkboxes.back());
+        layouts.back()->addWidget(labels.back());
+        labels.back()->setText(edit->text());
+        edit->clear();
+        vlayout->addLayout(layouts.back());
 
-    connect(checkboxes.back(),SIGNAL(clicked()),signalMapper,SLOT(map()));
-    signalMapper->setMapping(checkboxes.back(),numberofitems);
+        connect(checkboxes.back(),SIGNAL(clicked()),signalMapper,SLOT(map()));
+        signalMapper->setMapping(checkboxes.back(),numberofitems);
+    }
 }
 
 void Widget::remove_item(int i){

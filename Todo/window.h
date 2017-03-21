@@ -8,7 +8,7 @@
 #include <QLineEdit>
 #include <QVector>
 #include <array>
-
+#include <QSignalMapper>
 
 class Widget : public QWidget
 {
@@ -24,9 +24,12 @@ private:
     QVector<QHBoxLayout*> layouts;
     QVector<QCheckBox*> checkboxes;
     QVector<QLabel*> labels;
+    QSignalMapper * signalMapper;
+    int numberofitems;
 
 private slots:
     void add_item();
+    void remove_item(int i);
 };
 
 #endif // WINDOW_H

@@ -1,21 +1,23 @@
 #include "window.h"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QCheckBox>
+#include <QFile>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <iostream>
-#include <QFile>
+#include <QScrollArea>
 #include <QTextStream>
+#include <QVBoxLayout>
+#include <iostream>
 
-Widget::Widget(QWidget *parent)
-    : QWidget(parent)
-{
-    this->setFixedHeight(200);
-    this->setFixedWidth(150);
+Widget::Widget(QWidget *parent) : QWidget(parent) {
+    this->setMinimumHeight(200);
 
-    vlayout = new QVBoxLayout(this);
+    this->setMinimumWidth(150);
+
+    v_top_layout = new QVBoxLayout(this);
+
+    v_top_layout->setAlignment(Qt::AlignTop);
 
     QHBoxLayout *addline = new QHBoxLayout();
 
@@ -31,25 +33,47 @@ Widget::Widget(QWidget *parent)
 
     btn->setText("+");
 
-    vlayout->addLayout(addline);
+    v_top_layout->addLayout(addline);
 
-    vlayout->setAlignment(Qt::AlignTop);
+    v_item_layout = new QVBoxLayout();
 
-    connect(btn,SIGNAL(clicked(bool)),this,SLOT(add_item_frontend()));
+    QScrollArea *area = new QScrollArea();
 
-    connect(edit,SIGNAL(returnPressed()),this,SLOT(add_item_frontend()));
+    QWidget *scrollAreaContent = new QWidget;
+
+    area->setAlignment(Qt::AlignTop);
+
+    // scrollAreaContent->setSizePolicy(QSizePolicy::Policy::ExpandFlag);
+
+    scrollAreaContent->setLayout(v_item_layout);
+
+    // area->setAlignment(Qt::AlignTop);
+
+    v_item_layout->setAlignment(Qt::AlignTop);
+
+    area->setWidgetResizable(true);
+
+    area->setWidget(scrollAreaContent);
+
+    area->setFrameShape(QFrame::NoFrame);
+
+    v_top_layout->addWidget(area);
+
+    connect(btn, SIGNAL(clicked(bool)), this, SLOT(add_item_frontend()));
+
+    connect(edit, SIGNAL(returnPressed()), this, SLOT(add_item_frontend()));
 
     signalMapper = new QSignalMapper(this);
 
     connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(remove_item(int)));
 
-    numberofitems = 0;
+    id = 0;
 
     file = new QFile("todo.txt");
 
-    if(file->open(QIODevice::ReadWrite)) {
+    if (file->open(QIODevice::ReadWrite)) {
         QTextStream in(file);
-        while(!in.atEnd()) {
+        while (!in.atEnd()) {
             add_item(in.readLine());
             std::cout << "reading 1 line" << std::endl;
         }
@@ -58,8 +82,9 @@ Widget::Widget(QWidget *parent)
 }
 
 void Widget::add_item(QString text) {
-    if(text != "") {
-        numberofitems++;
+    if (text != "") {
+        std::cout << "adding item with ID " << id << std::endl;
+        ids.push_back(id);
         layouts.push_back(new QHBoxLayout);
         checkboxes.push_back(new QCheckBox());
         labels.push_back(new QLabel);
@@ -68,34 +93,60 @@ void Widget::add_item(QString text) {
         layouts.back()->addWidget(labels.back());
         labels.back()->setText(text);
         edit->clear();
-        vlayout->addLayout(layouts.back());
+        v_item_layout->addLayout(layouts.back());
 
-        connect(checkboxes.back(),SIGNAL(clicked()),signalMapper,SLOT(map()));
-        signalMapper->setMapping(checkboxes.back(),numberofitems);
+        connect(checkboxes.back(), SIGNAL(clicked()), signalMapper,
+                SLOT(map()));
+        signalMapper->setMapping(checkboxes.back(), id);
+
+        id++;
     }
 }
 
-void Widget::add_item_frontend() {
-    add_item(edit->text());
+void Widget::add_item_frontend() { add_item(edit->text()); }
+
+void Widget::remove_item(int i) {
+    std::cout << "trying to remove item with ID " << i << std::endl;
+    QMutableVectorIterator<int> iter_ids(ids);
+    QMutableVectorIterator<QLabel *> iter_labels(labels);
+    QMutableVectorIterator<QHBoxLayout *> iter_layouts(layouts);
+    QMutableVectorIterator<QCheckBox *> iter_checkboxes(checkboxes);
+
+    bool found = false;
+
+    while (!found && iter_ids.hasNext()) {
+        if (iter_ids.next() == i) {
+            std::cout << i << std::endl;
+            found = true;
+
+            delete iter_labels.next();
+            delete iter_checkboxes.next();
+            delete iter_layouts.next();
+
+            iter_ids.remove();
+            iter_labels.remove();
+            iter_checkboxes.remove();
+            iter_layouts.remove();
+        } else {
+            // iter_ids has already advanced, if the other ones don't advance there will be a discrepancy
+            iter_labels.next();
+            iter_checkboxes.next();
+            iter_layouts.next();
+        }
+    }
 }
 
-void Widget::remove_item(int i){
-    std::cout << "trying to remove item " << i << std::endl;
-    vlayout->removeItem(layouts.at(i-1));
-    delete labels.at(i-1);
-    delete checkboxes.at(i-1);
-    delete layouts.at(i-1);
-}
-
-Widget::~Widget()
-{
+Widget::~Widget() {
     std::cout << "closing" << std::endl;
-    if(file->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
+    if (file->open(QIODevice::ReadWrite | QIODevice::Truncate)) {
         QTextStream out(file);
-        QVectorIterator<QLabel*> iter(labels);
-        while(iter.hasNext()) {
+        QVectorIterator<QLabel *> iter(labels);
+        std::cout << "before while" << std::endl;
+        while (iter.hasNext()) {
+            std::cout << "in while" << std::endl;
             out << iter.next()->text() << "\r\n";
         }
+        std::cout << "after while" << std::endl;
         file->close();
     }
 }

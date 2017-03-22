@@ -1,35 +1,36 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <QWidget>
 #include <QCheckBox>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QLineEdit>
-#include <QVector>
-#include <array>
-#include <QSignalMapper>
 #include <QFile>
+#include <QLabel>
+#include <QLineEdit>
+#include <QSignalMapper>
+#include <QVBoxLayout>
+#include <QVector>
+#include <QWidget>
+#include <array>
 
-class Widget : public QWidget
-{
+class Widget : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     Widget(QWidget *parent = 0);
     ~Widget();
 
-private:
-    QVBoxLayout *vlayout;
+  private:
+    QVBoxLayout *v_top_layout;
+    QVBoxLayout *v_item_layout;
     QLineEdit *edit;
-    QVector<QHBoxLayout*> layouts;
-    QVector<QCheckBox*> checkboxes;
-    QVector<QLabel*> labels;
-    QSignalMapper * signalMapper;
-    int numberofitems;
+    QVector<QHBoxLayout *> layouts;
+    QVector<int> ids;
+    QVector<QCheckBox *> checkboxes;
+    QVector<QLabel *> labels;
+    QSignalMapper *signalMapper;
+    int id;
     QFile *file;
 
-private slots:
+  private slots:
     void add_item(QString text);
     void add_item_frontend();
     void remove_item(int i);
